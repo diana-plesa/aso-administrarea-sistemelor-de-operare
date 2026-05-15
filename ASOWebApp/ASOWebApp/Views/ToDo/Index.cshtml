@@ -1,0 +1,42 @@
+﻿@model IEnumerable<ASOWebApp.Models.ToDoItem>
+
+<h2>My TODO List</h2>
+
+<form asp-action="Add" method="post" style="margin-bottom: 20px;">
+    <input type="text" name="title" placeholder="Add a new task..." required />
+    <button type="submit">Add Task</button>
+</form>
+
+<ul style="list-style-type: none; padding: 0;">
+    @foreach (var item in Model)
+    {
+        <li style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+            <form asp-action="Toggle" method="post" style="margin: 0;">
+                <input type="hidden" name="id" value="@item.Id" />
+                <input type="checkbox" onchange="this.form.submit()" @(item.IsDone ? "checked" : "") />
+            </form>
+
+            <span style="text-decoration: @(item.IsDone ? "line-through" : "none")">
+                @item.Title
+            </span>
+
+            <form asp-action="Delete" method="post" style="margin: 0;">
+                <input type="hidden" name="id" value="@item.Id" />
+                <button type="submit" style="color: red;">Delete</button>
+            </form>
+        </li>
+    }
+</ul>
+
+<hr />
+
+<h3>Recent Actions (Max 5)</h3>
+<ul>
+    @if (ViewBag.History != null)
+    {
+        foreach (var log in ViewBag.History)
+        {
+            <li style="color: gray;">@log</li>
+        }
+    }
+</ul>
