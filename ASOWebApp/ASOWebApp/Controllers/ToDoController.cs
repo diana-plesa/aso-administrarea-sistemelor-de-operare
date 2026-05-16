@@ -5,7 +5,7 @@ namespace ASOWebApp.Controllers
 {
     public class ToDoController : Controller
     {
-        private const int MaxItemsLimit = 5;
+        private const int MaxItemsLimit = 10;
         private static List<ToDoItem> _todoItems = new List<ToDoItem>();
         private static int _nextId = 1;
         private static CircularBuffer<string> _historyLog = new CircularBuffer<string>(MaxItemsLimit);
@@ -55,6 +55,18 @@ namespace ASOWebApp.Controllers
                 _historyLog.Enqueue($"Deleted task: '{item.Title}'");
             }
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult Edit(int id, string title)
+        {
+            var item = _todoItems.FirstOrDefault(t => t.Id == id);
+            if (item != null && !string.IsNullOrWhiteSpace(title))
+            {
+                _historyLog.Enqueue($"Changed task '{item.Title}' to '{title}'");
+                item.Title = title;
+            }
+            return RedirectToAction("Index"); 
         }
     }
 }

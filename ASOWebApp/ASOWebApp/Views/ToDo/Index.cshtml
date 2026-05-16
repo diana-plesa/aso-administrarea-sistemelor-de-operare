@@ -2,35 +2,59 @@
 
 <h2>My TODO List</h2>
 
+<!-- Add Item Form -->
 <form asp-action="Add" method="post" style="margin-bottom: 20px;">
     <input type="text" name="title" placeholder="Add a new task..." required />
     <button type="submit">Add Task</button>
 </form>
 
+<!-- List of Tasks -->
 <ul style="list-style-type: none; padding: 0;">
     @foreach (var item in Model)
     {
         <li style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+
+            <!-- Toggle Checkbox -->
             <form asp-action="Toggle" method="post" style="margin: 0;">
                 <input type="hidden" name="id" value="@item.Id" />
                 <input type="checkbox" onchange="this.form.submit()" @(item.IsDone ? "checked" : "") />
             </form>
 
-            <span style="text-decoration: @(item.IsDone ? "line-through" : "none")">
+            <!-- Display Text (Visible by default) -->
+            <span id="text-@item.Id" style="text-decoration: @(item.IsDone ? "line-through" : "none")">
                 @item.Title
             </span>
 
-            <form asp-action="Delete" method="post" style="margin: 0;">
+            <!-- Edit Form (Hidden by default) -->
+            <form asp-action="Edit" method="post" id="edit-form-@item.Id" style="display: none; margin: 0; gap: 5px;">
                 <input type="hidden" name="id" value="@item.Id" />
-                <button type="submit" style="color: red;">Delete</button>
+                <input type="text" name="title" value="@item.Title" required />
+                <button type="submit">Save</button>
+                <button type="button" onclick="cancelEdit(@item.Id)">Cancel</button>
             </form>
+
+            <!-- Action Buttons (Visible by default) -->
+            <div id="actions-@item.Id" style="display: flex; gap: 10px;">
+                <button type="button" onclick="startEdit(@item.Id)" style="color: blue; background: none; border: none; cursor: pointer; text-decoration: underline;">
+                    Edit
+                </button>
+
+                <form asp-action="Delete" method="post" style="margin: 0;">
+                    <input type="hidden" name="id" value="@item.Id" />
+                    <button type="submit" style="color: red; background: none; border: none; cursor: pointer; text-decoration: underline;">
+                        Delete
+                    </button>
+                </form>
+            </div>
+
         </li>
     }
 </ul>
 
 <hr />
 
-<h3>Recent Actions (Max 5)</h3>
+<!-- History Log (Using the Circular Buffer) -->
+<h3>Recent Actions</h3>
 <ul>
     @if (ViewBag.History != null)
     {
@@ -40,3 +64,18 @@
         }
     }
 </ul>
+
+<!-- JavaScript for Inline Edit Toggle -->
+<script>
+    function startEdit(id) {
+        document.getElementById('text-' + id).style.display = 'none';
+        document.getElementById('actions-' + id).style.display = 'none';
+        document.getElementById('edit-form-' + id).style.display = 'flex';
+    }
+
+    function cancelEdit(id) {
+        document.getElementById('text-' + id).style.display = 'inline';
+        document.getElementById('actions-' + id).style.display = 'flex';
+        document.getElementById('edit-form-' + id).style.display = 'none';
+    }
+</script>

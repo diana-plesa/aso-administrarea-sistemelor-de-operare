@@ -4,8 +4,28 @@
 
 using namespace std;
 
-// Link the library required for Windows Service functions
+//link the library required for Windows Service functions
 #pragma comment(lib, "advapi32.lib")
+
+//helper function to fetch the DLL path from the registry
+wstring GetServiceDll(const wstring& serviceName)
+{
+    wstring subkey = L"SYSTEM\\CurrentControlSet\\Services\\" + serviceName + L"\\Parameters";
+    HKEY hKey;
+    wchar_t dllPath[MAX_PATH] = L"";
+    DWORD bufferSize = sizeof(dllPath);
+
+    if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, subkey.c_str(), 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+    {
+        if (RegQueryValueExW(hKey, L"ServiceDll", NULL, NULL, (LPBYTE)dllPath, &bufferSize) == ERROR_SUCCESS)
+        {
+            RegCloseKey(hKey);
+            return wstring(dllPath);
+        }
+        RegCloseKey(hKey);
+    }
+    return L"N/A (standalone executable)";
+}
 
 int main() 
 {
@@ -48,6 +68,7 @@ int main()
             if (pServices[i].ServiceStatusProcess.dwCurrentState == SERVICE_RUNNING) 
             {
                 wcout << L"Running: " << pServices[i].lpDisplayName << endl;
+                wcout << L"DLL: " << GetServiceDll(pServices[i].lpServiceName);
             }
         }
     }
